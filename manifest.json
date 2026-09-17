@@ -1,0 +1,65 @@
+{
+  "name": "Mi Incentivo — Mercado Pago",
+  "short_name": "Mi Incentivo",
+  "description": "Seguimiento personal de ventas, metas y pago mensual para promotores de Mercado Pago.",
+  "lang": "es-MX",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#F5F5F7",
+  "theme_color": "#FFE600",
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir mi resumen",
+      "short_name": "Resumen",
+      "description": "Accede a tu resumen personal después de validar tu clave.",
+      "url": "./#home",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ver mi cálculo",
+      "short_name": "Mi cálculo",
+      "description": "Abre el desglose de tu incentivo después de validar tu clave.",
+      "url": "./#calculator",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
