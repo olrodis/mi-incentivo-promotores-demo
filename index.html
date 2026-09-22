@@ -16,21 +16,18 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://http2.mlstatic.com" crossorigin>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script defer src="https://unpkg.com/lucide@1.46.0/dist/umd/lucide.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" onload="window.dispatchEvent(new Event('vendor:chart-ready'))"></script>
+  <script async src="https://unpkg.com/lucide@1.46.0/dist/umd/lucide.min.js" onload="window.dispatchEvent(new Event('vendor:lucide-ready'))"></script>
   <style>
     @font-face{font-family:"Proxima Nova";src:url("https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2") format("woff2");font-weight:300;font-display:swap}
     @font-face{font-family:"Proxima Nova";src:url("https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2") format("woff2");font-weight:400;font-display:swap}
     @font-face{font-family:"Proxima Nova";src:url("https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-semibold.woff2") format("woff2");font-weight:600;font-display:swap}
     :root{color-scheme:light;--mp-blue:#009ee3;--mp-blue-dark:#006f9f;--mp-blue-soft:#e6f5fc;--mp-navy:#2d3277;--mp-navy-deep:#171b52;--ink:#1f2633;--muted:#586574;--subtle:#687684;--canvas:#f2f6f9;--surface:#fff;--line:#dfe7ed;--success:#008f45;--success-soft:#e8f7ef;--warning:#a85a00;--warning-soft:#fff2df;--danger:#c82c39;--shadow-sm:0 8px 24px rgba(33,50,74,.08);--shadow-md:0 18px 50px rgba(28,49,72,.14);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html{min-height:100%;background:#dce8ef;scroll-behavior:smooth}
-    body{min-height:100%;margin:0;overflow-x:hidden;background:radial-gradient(circle at 15% -10%,rgba(0,158,227,.2),transparent 36rem),radial-gradient(circle at 90% 110%,rgba(45,50,119,.12),transparent 34rem),#eaf1f5;color:var(--ink);font-family:"Proxima Nova",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;text-rendering:optimizeLegibility}
+    html{min-height:100%;background:#dce8ef;color-scheme:light;scroll-behavior:smooth}
+    body{min-height:100%;margin:0;overflow-x:hidden;background:radial-gradient(circle at 15% -10%,rgba(0,158,227,.2),transparent 36rem),radial-gradient(circle at 90% 110%,rgba(45,50,119,.12),transparent 34rem),#eaf1f5;color:var(--ink);font-family:"Proxima Nova",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     button,input,select{font:inherit}button{border:0;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #005f87;outline-offset:3px}[hidden]{display:none!important}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .app-shell{position:relative;width:min(100%,520px);min-height:100dvh;margin:0 auto;overflow-x:clip;background:var(--canvas);box-shadow:0 0 80px rgba(33,50,74,.2)}
@@ -65,6 +62,8 @@
     .bottom-nav{position:fixed;z-index:50;right:0;bottom:0;left:0;width:min(100%,520px);margin:0 auto;padding:7px 7px calc(7px + var(--safe-bottom));border-top:1px solid rgba(205,218,226,.9);background:rgba(255,255,255,.94);box-shadow:0 -10px 32px rgba(32,48,67,.08);backdrop-filter:blur(20px)}.nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}.nav-button{position:relative;display:flex;min-height:62px;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:17px;background:transparent;color:#596674;font-size:11px;font-weight:600;transition:color 160ms,background 160ms,transform 160ms}.nav-button svg{width:22px;height:22px;stroke-width:2}.nav-button.active{background:var(--mp-blue-soft);color:var(--mp-blue-dark)}.nav-button:active{transform:scale(.96)}
     .notification-stack{position:fixed;z-index:80;right:16px;bottom:calc(92px + var(--safe-bottom));left:16px;width:min(calc(100% - 32px),488px);margin:0 auto;pointer-events:none}.toast{display:flex;align-items:center;gap:10px;min-height:50px;padding:12px 14px;border:1px solid rgba(255,255,255,.15);border-radius:16px;background:rgba(29,38,51,.95);color:#fff;box-shadow:0 16px 36px rgba(17,26,37,.24);font-size:13px;font-weight:600;pointer-events:auto;backdrop-filter:blur(12px)}.update-toast{align-items:center;justify-content:space-between;gap:12px}.update-toast button{min-height:38px;flex:0 0 auto;padding:0 12px;border-radius:11px;background:var(--mp-blue);color:#fff;font-size:12px;font-weight:600}
     dialog{width:min(calc(100% - 32px),440px);padding:0;border:0;border-radius:24px;background:transparent;color:inherit}dialog::backdrop{background:rgba(11,22,34,.55);backdrop-filter:blur(5px)}.dialog-card{padding:24px;border-radius:24px;background:#fff;box-shadow:var(--shadow-md)}.dialog-icon{display:grid;width:48px;height:48px;place-items:center;border-radius:16px;background:var(--mp-blue-soft);color:var(--mp-blue-dark)}.dialog-card h2{margin:16px 0 0;font-size:22px;font-weight:600;letter-spacing:-.025em}.dialog-card p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.5}.dialog-card .secondary-button{margin-top:20px}
+    .animate__animated{animation-duration:1s;animation-fill-mode:both}.animate__faster{animation-duration:.5s}.animate__fadeIn{animation-name:fade-in}.animate__fadeInUp{animation-name:fade-in-up}
+    @keyframes fade-in{from{opacity:0}to{opacity:1}}@keyframes fade-in-up{from{opacity:0;transform:translate3d(0,24px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
     @keyframes spin{to{transform:rotate(360deg)}}.is-spinning{animation:spin 700ms linear infinite}
     @media(min-width:600px){body{padding:24px 0}.app-shell{min-height:calc(100dvh - 48px);border:1px solid rgba(207,219,227,.75);border-radius:34px}.login-screen{min-height:calc(100dvh - 48px)}.bottom-nav{bottom:24px;border-right:1px solid rgba(205,218,226,.9);border-bottom:1px solid rgba(205,218,226,.9);border-left:1px solid rgba(205,218,226,.9);border-radius:0 0 34px 34px}}
     @media(max-width:355px){.login-panel{width:calc(100% - 22px);padding-right:17px;padding-left:17px}.app-content{padding-right:12px;padding-left:12px}.hero-card{padding:20px}.hero-amount{font-size:40px}.action-card{grid-template-columns:44px 1fr}.action-arrow{display:none}.store-stat strong{font-size:15px}}
@@ -156,7 +155,7 @@
     @media(min-width:600px){.app-shell{border-color:rgba(60,60,67,.16)}.bottom-nav{border-right-color:rgba(60,60,67,.16);border-bottom-color:rgba(60,60,67,.16);border-left-color:rgba(60,60,67,.16)}}
   </style>
 </head>
-<body class="antialiased">
+<body>
   <div class="app-shell" id="appRoot">
     <section class="login-screen" id="loginScreen" aria-labelledby="loginTitle">
       <div class="login-hero">
@@ -1459,6 +1458,10 @@
         elements.installButton.hidden = true;
       }
       bindEvents();
+      window.addEventListener("vendor:lucide-ready", refreshIcons);
+      window.addEventListener("vendor:chart-ready", function () {
+        if (state.promoter && state.activeView === "home") renderProductMix(state.promoter);
+      });
       refreshIcons();
       window.setTimeout(refreshIcons, 180);
       window.setTimeout(function () {

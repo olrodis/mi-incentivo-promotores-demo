@@ -14,7 +14,7 @@ const LEGACY_CACHE_NAMES = new Set([
   "flow-control-pwa-cdn-2026.09.14.2",
   "mp-incentivos-pwa-shell-2026.09.14.3"
 ]);
-const CACHE_VERSION = "2026.09.17.15";
+const CACHE_VERSION = "2026.09.22.16";
 const SHELL_CACHE = APP_CACHE_PREFIX + "shell-" + CACHE_VERSION;
 
 const INDEX_URL = new URL("index.html", BASE_URL).href;
@@ -89,7 +89,7 @@ self.addEventListener("fetch", function (event) {
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirstNavigation(request));
+    event.respondWith(staleWhileRevalidateNavigation(request, event));
     return;
   }
 
@@ -105,39 +105,44 @@ self.addEventListener("fetch", function (event) {
   }
 });
 
-async function networkFirstNavigation(request) {
+async function staleWhileRevalidateNavigation(request, event) {
   const requestUrl = new URL(request.url);
   const canUpdateShell = requestUrl.pathname === APP_ROOT_PATH || requestUrl.pathname === INDEX_PATH;
+  const cache = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(INDEX_URL) || await cache.match(APP_ROOT_URL);
   const controller = new AbortController();
   const timeoutId = setTimeout(function () {
     controller.abort();
-  }, 4500);
+  }, 3500);
 
-  try {
-    const response = await fetch(new Request(request, {
+  const update = fetch(new Request(request, {
       cache: "no-store",
       credentials: "same-origin",
       signal: controller.signal
-    }));
-
-    if (response && response.ok) {
-      if (canUpdateShell) {
-        const cache = await caches.open(SHELL_CACHE);
+    })).then(async function (response) {
+      if (response && response.ok && canUpdateShell) {
         await Promise.all([
           cache.put(INDEX_URL, response.clone()),
           cache.put(APP_ROOT_URL, response.clone())
         ]);
       }
-      return response;
-    }
 
-    if (response && response.status < 500) return response;
-    throw new Error("Navigation failed with status " + (response ? response.status : "unknown"));
+      if (response && (response.ok || response.status < 500)) return response;
+      throw new Error("Navigation failed with status " + (response ? response.status : "unknown"));
+    }).finally(function () {
+      clearTimeout(timeoutId);
+    });
+
+  if (cached) {
+    event.waitUntil(update.catch(function () {
+      return undefined;
+    }));
+    return cached;
+  }
+
+  try {
+    return await update;
   } catch (error) {
-    const cache = await caches.open(SHELL_CACHE);
-    const fallback = await cache.match(INDEX_URL) || await cache.match(APP_ROOT_URL);
-    if (fallback) return fallback;
-
     return new Response(
       "<!doctype html><html lang=\"es-MX\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>Sin conexión</title><body><h1>Sin conexión</h1><p>Abre la aplicación una vez con internet para habilitar el modo offline.</p></body></html>",
       {
@@ -145,8 +150,6 @@ async function networkFirstNavigation(request) {
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
       }
     );
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
