@@ -14,7 +14,7 @@ const LEGACY_CACHE_NAMES = new Set([
   "flow-control-pwa-cdn-2026.09.14.2",
   "mp-incentivos-pwa-shell-2026.09.14.3"
 ]);
-const CACHE_VERSION = "2026.09.28.3";
+const CACHE_VERSION = "2026.09.28.4";
 const SHELL_CACHE = APP_CACHE_PREFIX + "shell-" + CACHE_VERSION;
 const ENCRYPTED_CACHE = PRIVATE_CACHE_PREFIX + "encrypted-" + CACHE_VERSION;
 const LEGACY_DEMO_SHELL = APP_CACHE_PREFIX + "shell-2026.09.22.16";
@@ -28,6 +28,7 @@ const BRAND_LOGO_URL = new URL("icons/mercado-pago-logo.png", BASE_URL).href;
 const CHART_JS_URL = new URL("vendor/chart.umd.js", BASE_URL).href;
 const LUCIDE_JS_URL = new URL("vendor/lucide.min.js", BASE_URL).href;
 const ENCRYPTED_DATA_URL = new URL("data.enc.json", BASE_URL).href;
+const CURRENT_APP_MARKER = 'name="mp-incentives-static-data" content="./data.enc.json"';
 
 const LOCAL_SHELL = [
   APP_ROOT_URL,
@@ -44,19 +45,9 @@ const LOCAL_SHELL_SET = new Set(LOCAL_SHELL);
 const INDEX_PATH = new URL(INDEX_URL).pathname;
 
 self.addEventListener("install", function (event) {
-  event.waitUntil((async function () {
-    const cache = await caches.open(SHELL_CACHE);
-    const requests = LOCAL_SHELL.map(function (url) {
-      return new Request(url, { cache: "reload", credentials: "same-origin" });
-    });
-
-    /*
-      La instalación es atómica: si falta un recurso crítico, la versión anterior
-      permanece activa y conserva una experiencia offline válida.
-    */
-    await cache.addAll(requests);
-    await self.skipWaiting();
-  })());
+  // Un recurso auxiliar lento o bloqueado nunca debe retener la demo anterior.
+  // El shell se guarda después de recibirlo correctamente durante la navegación.
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener("activate", function (event) {
@@ -177,6 +168,9 @@ async function networkFirstNavigation(request) {
       signal: controller.signal
     }));
     if (!response.ok) throw new Error("Navigation unavailable");
+    if (!(await response.clone().text()).includes(CURRENT_APP_MARKER)) {
+      throw new Error("Unexpected app version");
+    }
     try {
       await Promise.all([
         cache.put(INDEX_URL, response.clone()),
@@ -190,7 +184,7 @@ async function networkFirstNavigation(request) {
     const cached = await cache.match(INDEX_URL) || await cache.match(APP_ROOT_URL);
     if (cached) return cached;
     return new Response(
-      "<!doctype html><html lang=\"es-MX\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>Sin conexión</title><body><h1>Sin conexión</h1><p>Abre la aplicación una vez con internet para habilitar el modo offline.</p></body></html>",
+      "<!doctype html><html lang=\"es-MX\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>No se pudo actualizar</title><body><h1>No se pudo abrir Mi Incentivo</h1><p>No mostramos una versión anterior porque podría tener datos de demostración. Intenta abrirla de nuevo cuando tengas conexión.</p></body></html>",
       {
         status: 503,
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
