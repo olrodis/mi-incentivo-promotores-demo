@@ -543,6 +543,7 @@
       deferredInstallPrompt: null,
       lastSyncAt: null,
       snapshotVersion: "",
+      dataFromCache: false,
       lastBackgroundRefreshAt: 0,
       calculationStoreIndex: 0,
       toastTimer: null,
@@ -864,8 +865,11 @@
       const controller = new AbortController();
       const timeout = window.setTimeout(function () { controller.abort(); }, 12000);
       let bundle;
+      let fromCache = false;
       try {
-        const response = await fetch(STATIC_DATA_URL, {
+        const dataUrl = new URL(STATIC_DATA_URL, window.location.href);
+        dataUrl.searchParams.set("fresh", String(Date.now()));
+        const response = await fetch(dataUrl.href, {
           method: "GET",
           headers: { "Accept": "application/json" },
           cache: "no-store",
@@ -873,6 +877,7 @@
           signal: controller.signal
         });
         if (!response.ok) throw new Error("DATA_UNAVAILABLE");
+        fromCache = response.headers.get("X-Mi-Incentivo-Source") === "cache";
         bundle = await response.json();
       } catch (error) {
         if (error && error.name === "AbortError") throw error;
@@ -912,7 +917,7 @@
           throw new Error("DATA_NOT_READY");
         }
         const profileWithMeta = Object.assign({}, profilePayload, { apiMeta: plaintext.meta || {} });
-        return { profile: cloneProfile(profileWithMeta), sessionToken: "", snapshotVersion: bundle.snapshotVersion };
+        return { profile: cloneProfile(profileWithMeta), sessionToken: "", snapshotVersion: bundle.snapshotVersion, fromCache: fromCache };
       } catch (error) {
         throw new Error("DATA_NOT_READY");
       }
@@ -995,8 +1000,9 @@
         state.activeCode = ACCESS_MODE === "api" ? "" : code;
         state.sessionToken = authentication.sessionToken;
         state.snapshotVersion = authentication.snapshotVersion || "";
+        state.dataFromCache = authentication.fromCache === true;
         state.promoter = preparePromoter(authentication.profile);
-        state.lastSyncAt = new Date();
+        state.lastSyncAt = state.dataFromCache ? null : new Date();
         state.lastBackgroundRefreshAt = Date.now();
         if (ACCESS_MODE === "demo") sessionStorage.setItem(SESSION_KEY, code);
         elements.accessCode.value = "";
@@ -1059,7 +1065,7 @@
         : "Día " + state.promoter.periodDay;
       elements.syncStatusLabel.textContent = navigator.onLine
         ? (ACCESS_MODE === "static"
-            ? "Avance al corte · pago estimado"
+            ? (state.dataFromCache ? "Corte guardado · esperando conexión" : "Avance al corte · pago estimado")
             : ACCESS_MODE === "api"
             ? (state.promoter.paymentIsEstimate ? "Avance real · pago estimado" : "Corte final validado")
             : "Demo · datos de ejemplo")
@@ -1396,14 +1402,17 @@
         const previousVersion = state.snapshotVersion;
         state.sessionToken = authentication.sessionToken;
         state.snapshotVersion = authentication.snapshotVersion || "";
+        state.dataFromCache = authentication.fromCache === true;
         state.promoter = preparePromoter(authentication.profile);
-        state.lastSyncAt = new Date();
+        if (!state.dataFromCache) state.lastSyncAt = new Date();
         state.lastBackgroundRefreshAt = Date.now();
         renderAll();
-        if (!silent || (ACCESS_MODE === "static" && state.snapshotVersion !== previousVersion)) {
-          showToast(ACCESS_MODE === "static" && state.snapshotVersion === previousVersion
-            ? "El corte sigue igual"
-            : "Información actualizada");
+        if (!silent || (ACCESS_MODE === "static" && !state.dataFromCache && state.snapshotVersion !== previousVersion)) {
+          showToast(state.dataFromCache
+            ? "Sin datos nuevos de la red; seguimos mostrando el corte guardado"
+            : ACCESS_MODE === "static" && state.snapshotVersion === previousVersion
+              ? "El corte sigue igual"
+              : "Información actualizada");
         }
       } catch (error) {
         elements.syncStatusLabel.textContent = navigator.onLine ? "No se pudo actualizar" : "Modo sin conexión";
@@ -1429,7 +1438,8 @@
     function maybeRefreshStaticOnReturn() {
       if (ACCESS_MODE !== "static" || !state.promoter || state.isRefreshing ||
           !navigator.onLine || document.visibilityState !== "visible") return;
-      if (Date.now() - state.lastBackgroundRefreshAt < 300000) return;
+      const retryAfterMs = state.dataFromCache ? 60000 : 300000;
+      if (Date.now() - state.lastBackgroundRefreshAt < retryAfterMs) return;
       state.lastBackgroundRefreshAt = Date.now();
       refreshProfile({ silent: true });
     }
@@ -1449,6 +1459,7 @@
       state.moneyVisible = false;
       state.lastSyncAt = null;
       state.snapshotVersion = "";
+      state.dataFromCache = false;
       state.lastBackgroundRefreshAt = 0;
       state.calculationStoreIndex = 0;
       clearSensitiveDom();
@@ -1516,9 +1527,11 @@
     function updateConnectivity(notify) {
       const online = navigator.onLine;
       elements.offlineBanner.hidden = online;
-      elements.syncDot.classList.toggle("offline", !online);
+      elements.syncDot.classList.toggle("offline", !online || (ACCESS_MODE === "static" && state.dataFromCache));
       elements.syncStatusLabel.textContent = online
-        ? (ACCESS_MODE === "static" ? "Avance al corte · pago estimado" : ACCESS_MODE === "api" ? "Con conexión" : "Demo · datos de ejemplo")
+        ? (ACCESS_MODE === "static"
+            ? (state.dataFromCache ? "Corte guardado · esperando conexión" : "Avance al corte · pago estimado")
+            : ACCESS_MODE === "api" ? "Con conexión" : "Demo · datos de ejemplo")
         : (ACCESS_MODE === "static" ? "Corte guardado · sin conexión" : "Modo sin conexión");
       if (!online && notify !== false) showToast(ACCESS_MODE === "demo"
         ? "Sin conexión · La demo sigue disponible"
@@ -1595,13 +1608,18 @@
         renderCalculator();
         refreshIcons();
       });
-      window.addEventListener("online", function () { updateConnectivity(true); maybeRefreshStaticOnReturn(); });
+      window.addEventListener("online", function () {
+        updateConnectivity(true);
+        if (ACCESS_MODE === "static" && state.dataFromCache) refreshProfile({ silent: true });
+        else maybeRefreshStaticOnReturn();
+      });
       window.addEventListener("offline", function () { updateConnectivity(true); });
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "hidden") hideMoneyForPrivacy();
         else maybeRefreshStaticOnReturn();
       });
       window.addEventListener("focus", maybeRefreshStaticOnReturn);
+      window.setInterval(maybeRefreshStaticOnReturn, 60000);
       window.addEventListener("popstate", function () {
         const view = window.location.hash.replace("#", "");
         if (state.promoter && VALID_VIEWS.has(view)) showView(view, { fromHistory: true, instant: true });

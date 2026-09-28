@@ -14,7 +14,7 @@ const LEGACY_CACHE_NAMES = new Set([
   "flow-control-pwa-cdn-2026.09.14.2",
   "mp-incentivos-pwa-shell-2026.09.14.3"
 ]);
-const CACHE_VERSION = "2026.09.28.4";
+const CACHE_VERSION = "2026.09.28.5";
 const SHELL_CACHE = APP_CACHE_PREFIX + "shell-" + CACHE_VERSION;
 const ENCRYPTED_CACHE = PRIVATE_CACHE_PREFIX + "encrypted-" + CACHE_VERSION;
 const LEGACY_DEMO_SHELL = APP_CACHE_PREFIX + "shell-2026.09.22.16";
@@ -54,9 +54,10 @@ self.addEventListener("activate", function (event) {
   event.waitUntil((async function () {
     const keys = await caches.keys();
     const replacingInstalledDemo = keys.includes(LEGACY_DEMO_SHELL);
+    await preserveLastValidCut(keys);
     await Promise.all(keys.filter(function (key) {
       const staleCurrentAppCache = key.startsWith(APP_CACHE_PREFIX) && key !== SHELL_CACHE;
-      const privateCache = key.startsWith(PRIVATE_CACHE_PREFIX);
+      const privateCache = key.startsWith(PRIVATE_CACHE_PREFIX) && key !== ENCRYPTED_CACHE;
       const legacyCache = LEGACY_CACHE_NAMES.has(key);
       return staleCurrentAppCache || privateCache || legacyCache;
     }).map(function (key) {
@@ -128,7 +129,7 @@ async function networkFirstEncryptedData(request) {
   const controller = new AbortController();
   const timeoutId = setTimeout(function () {
     controller.abort();
-  }, 4500);
+  }, 10000);
   try {
     const response = await fetch(new Request(request, {
       cache: "no-store",
@@ -136,6 +137,7 @@ async function networkFirstEncryptedData(request) {
       signal: controller.signal
     }));
     if (!response.ok) throw new Error("Encrypted data unavailable");
+    await validateEncryptedResponse(response);
     try {
       await cache.put(ENCRYPTED_DATA_URL, response.clone());
     } catch (error) {
@@ -144,13 +146,73 @@ async function networkFirstEncryptedData(request) {
     return response;
   } catch (error) {
     const cached = await cache.match(ENCRYPTED_DATA_URL);
-    if (cached) return cached;
+    if (cached) {
+      const headers = new Headers(cached.headers);
+      headers.set("X-Mi-Incentivo-Source", "cache");
+      return new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers: headers
+      });
+    }
     return new Response("Encrypted data unavailable", {
       status: 503,
       headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
     });
   } finally {
     clearTimeout(timeoutId);
+  }
+}
+
+async function validateEncryptedResponse(response) {
+  const bundle = await response.clone().json();
+  if (!bundle || bundle.schema !== "mi-incentivo-encrypted-v1" ||
+      typeof bundle.snapshotVersion !== "string" || !bundle.snapshotVersion ||
+      typeof bundle.salt !== "string" ||
+      !bundle.profiles || typeof bundle.profiles !== "object" ||
+      Array.isArray(bundle.profiles) || !Object.keys(bundle.profiles).length) {
+    throw new Error("Invalid encrypted data");
+  }
+}
+
+async function preserveLastValidCut(keys) {
+  const currentShell = await caches.open(SHELL_CACHE);
+  if (!await currentShell.match(INDEX_URL)) {
+    const olderShells = keys.filter(function (key) {
+      return key.startsWith(APP_CACHE_PREFIX) && key !== SHELL_CACHE && key !== LEGACY_DEMO_SHELL;
+    }).sort().reverse();
+    for (const name of olderShells) {
+      const older = await caches.open(name);
+      const page = await older.match(INDEX_URL) || await older.match(APP_ROOT_URL);
+      if (!page || !page.ok) continue;
+      try {
+        if (!(await page.clone().text()).includes(CURRENT_APP_MARKER)) continue;
+        await currentShell.put(INDEX_URL, page.clone());
+        await currentShell.put(APP_ROOT_URL, page.clone());
+        break;
+      } catch (error) {
+        // Un respaldo dañado no reemplaza el shell actual.
+      }
+    }
+  }
+
+  const currentEncrypted = await caches.open(ENCRYPTED_CACHE);
+  if (!await currentEncrypted.match(ENCRYPTED_DATA_URL)) {
+    const olderEncrypted = keys.filter(function (key) {
+      return key.startsWith(PRIVATE_CACHE_PREFIX) && key !== ENCRYPTED_CACHE;
+    }).sort().reverse();
+    for (const name of olderEncrypted) {
+      const older = await caches.open(name);
+      const data = await older.match(ENCRYPTED_DATA_URL);
+      if (!data || !data.ok) continue;
+      try {
+        await validateEncryptedResponse(data);
+        await currentEncrypted.put(ENCRYPTED_DATA_URL, data.clone());
+        break;
+      } catch (error) {
+        // Solo conservamos cortes con la estructura cifrada esperada.
+      }
+    }
   }
 }
 
