@@ -166,20 +166,20 @@
         </div>
       </div>
       <div class="login-panel animate__animated animate__fadeInUp animate__faster">
-        <p class="panel-kicker">Acceso personal</p><h2>Ingresa tu clave</h2><p id="loginInstructions">Usa la clave de promotor de 6 caracteres que te fue asignada.</p>
+        <p class="panel-kicker">Acceso personal</p><h2>Ingresa tu clave</h2><p id="loginInstructions">Escribe o pega tu clave personal de 26 caracteres.</p>
         <form id="loginForm" novalidate>
           <label class="field-label" for="accessCode">Clave de promotor</label>
           <div class="input-shell">
-            <input class="code-input" id="accessCode" name="accessCode" type="password" maxlength="6" minlength="6" pattern="[A-Za-z0-9]{6}" placeholder="ABC123" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp loginError" aria-invalid="false" required>
+            <input class="code-input long-code" id="accessCode" name="accessCode" type="password" maxlength="128" minlength="26" placeholder="Tu clave personal" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp loginError" aria-invalid="false" required>
             <button class="icon-button input-action" id="toggleCodeVisibility" type="button" aria-label="Mostrar clave" aria-pressed="false"><span class="icon-fallback" aria-hidden="true">Ver</span><i data-lucide="eye" aria-hidden="true"></i></button>
           </div>
-          <span class="sr-only" id="codeHelp">La clave combina letras y números y contiene seis caracteres.</span>
+          <span class="sr-only" id="codeHelp">La clave combina letras y números y contiene 26 caracteres.</span>
           <p class="field-error" id="loginError" role="alert" aria-live="polite"></p>
           <button class="primary-button" id="loginButton" type="submit"><span id="loginButtonLabel">Ver mi información</span><i data-lucide="arrow-right" id="loginButtonIcon" aria-hidden="true"></i><span class="button-spinner" id="loginSpinner" hidden aria-hidden="true"></span></button>
         </form>
-        <button class="demo-access" id="demoCodeButton" type="button">Abrir demostración con MPD001</button>
+        <button class="demo-access" id="demoCodeButton" type="button" hidden>Abrir demostración con MPD001</button>
       </div>
-      <p class="privacy-note"><i data-lucide="shield-check" aria-hidden="true"></i><span id="loginPrivacyCopy">Por tu privacidad, cierra sesión al terminar si compartes este dispositivo. Esta versión pública usa únicamente datos ficticios.</span></p>
+      <p class="privacy-note"><i data-lucide="shield-check" aria-hidden="true"></i><span id="loginPrivacyCopy">No compartas tu clave. Cierra sesión si compartes este dispositivo.</span></p>
     </section>
 
     <section id="dashboardScreen" hidden>
@@ -1625,7 +1625,7 @@
           scope: "./",
           updateViaCache: "none"
         });
-        let lastUpdateCheck = Date.now();
+        let lastUpdateCheck = 0;
         const checkForUpdate = function () {
           if (document.visibilityState !== "visible") return;
           if (Date.now() - lastUpdateCheck < 300000) return;
@@ -1636,6 +1636,7 @@
         };
         document.addEventListener("visibilitychange", checkForUpdate);
         window.addEventListener("focus", checkForUpdate);
+        checkForUpdate();
         if (registration.waiting && navigator.serviceWorker.controller) elements.updateToast.hidden = false;
         registration.addEventListener("updatefound", function () {
           const worker = registration.installing;
@@ -1647,12 +1648,13 @@
           });
         });
         elements.applyUpdateButton.addEventListener("click", function () {
-          if (!registration.waiting) return;
           state.updateRequested = true;
-          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          else window.location.reload();
         });
         navigator.serviceWorker.addEventListener("controllerchange", function () {
-          if (state.updateRequested) window.location.reload();
+          if (state.updateRequested || !state.promoter) window.location.reload();
+          else elements.updateToast.hidden = false;
         });
       } catch (error) {
         console.warn("No se pudo registrar el Service Worker.", error);

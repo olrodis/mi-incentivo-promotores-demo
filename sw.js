@@ -14,9 +14,10 @@ const LEGACY_CACHE_NAMES = new Set([
   "flow-control-pwa-cdn-2026.09.14.2",
   "mp-incentivos-pwa-shell-2026.09.14.3"
 ]);
-const CACHE_VERSION = "2026.09.28.2";
+const CACHE_VERSION = "2026.09.28.3";
 const SHELL_CACHE = APP_CACHE_PREFIX + "shell-" + CACHE_VERSION;
 const ENCRYPTED_CACHE = PRIVATE_CACHE_PREFIX + "encrypted-" + CACHE_VERSION;
+const LEGACY_DEMO_SHELL = APP_CACHE_PREFIX + "shell-2026.09.22.16";
 
 const INDEX_URL = new URL("index.html", BASE_URL).href;
 const MANIFEST_URL = new URL("manifest.json", BASE_URL).href;
@@ -54,12 +55,14 @@ self.addEventListener("install", function (event) {
       permanece activa y conserva una experiencia offline válida.
     */
     await cache.addAll(requests);
+    await self.skipWaiting();
   })());
 });
 
 self.addEventListener("activate", function (event) {
   event.waitUntil((async function () {
     const keys = await caches.keys();
+    const replacingInstalledDemo = keys.includes(LEGACY_DEMO_SHELL);
     await Promise.all(keys.filter(function (key) {
       const staleCurrentAppCache = key.startsWith(APP_CACHE_PREFIX) && key !== SHELL_CACHE;
       const privateCache = key.startsWith(PRIVATE_CACHE_PREFIX);
@@ -73,6 +76,17 @@ self.addEventListener("activate", function (event) {
       await self.registration.navigationPreload.disable();
     }
     await self.clients.claim();
+    if (replacingInstalledDemo) {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      await Promise.all(windows.map(async function (client) {
+        const url = new URL(client.url);
+        if (url.origin !== self.location.origin ||
+            (url.pathname !== APP_ROOT_PATH && url.pathname !== INDEX_PATH)) return;
+        try { await client.navigate(client.url); } catch (error) {
+          // Algunos navegadores no permiten navegar desde el Service Worker.
+        }
+      }));
+    }
   })());
 });
 
@@ -95,7 +109,10 @@ self.addEventListener("fetch", function (event) {
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
   if (request.mode === "navigate") {
-    event.respondWith(staleWhileRevalidateNavigation(request, event));
+    if (url.origin === self.location.origin &&
+        (url.pathname === APP_ROOT_PATH || url.pathname === INDEX_PATH)) {
+      event.respondWith(networkFirstNavigation(request));
+    }
     return;
   }
 
@@ -146,44 +163,32 @@ async function networkFirstEncryptedData(request) {
   }
 }
 
-async function staleWhileRevalidateNavigation(request, event) {
-  const requestUrl = new URL(request.url);
-  const canUpdateShell = requestUrl.pathname === APP_ROOT_PATH || requestUrl.pathname === INDEX_PATH;
+async function networkFirstNavigation(request) {
   const cache = await caches.open(SHELL_CACHE);
-  const cached = await cache.match(INDEX_URL) || await cache.match(APP_ROOT_URL);
   const controller = new AbortController();
   const timeoutId = setTimeout(function () {
     controller.abort();
-  }, 3500);
+  }, 4500);
 
-  const update = fetch(new Request(request, {
+  try {
+    const response = await fetch(new Request(request, {
       cache: "no-store",
       credentials: "same-origin",
       signal: controller.signal
-    })).then(async function (response) {
-      if (response && response.ok && canUpdateShell) {
-        await Promise.all([
-          cache.put(INDEX_URL, response.clone()),
-          cache.put(APP_ROOT_URL, response.clone())
-        ]);
-      }
-
-      if (response && (response.ok || response.status < 500)) return response;
-      throw new Error("Navigation failed with status " + (response ? response.status : "unknown"));
-    }).finally(function () {
-      clearTimeout(timeoutId);
-    });
-
-  if (cached) {
-    event.waitUntil(update.catch(function () {
-      return undefined;
     }));
-    return cached;
-  }
-
-  try {
-    return await update;
+    if (!response.ok) throw new Error("Navigation unavailable");
+    try {
+      await Promise.all([
+        cache.put(INDEX_URL, response.clone()),
+        cache.put(APP_ROOT_URL, response.clone())
+      ]);
+    } catch (error) {
+      // Una caché llena no debe impedir abrir la versión recibida de la red.
+    }
+    return response;
   } catch (error) {
+    const cached = await cache.match(INDEX_URL) || await cache.match(APP_ROOT_URL);
+    if (cached) return cached;
     return new Response(
       "<!doctype html><html lang=\"es-MX\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>Sin conexión</title><body><h1>Sin conexión</h1><p>Abre la aplicación una vez con internet para habilitar el modo offline.</p></body></html>",
       {
@@ -191,6 +196,8 @@ async function staleWhileRevalidateNavigation(request, event) {
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
       }
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
