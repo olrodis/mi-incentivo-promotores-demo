@@ -14,8 +14,9 @@ const LEGACY_CACHE_NAMES = new Set([
   "flow-control-pwa-cdn-2026.09.14.2",
   "mp-incentivos-pwa-shell-2026.09.14.3"
 ]);
-const CACHE_VERSION = "2026.09.22.16";
+const CACHE_VERSION = "2026.09.28.2";
 const SHELL_CACHE = APP_CACHE_PREFIX + "shell-" + CACHE_VERSION;
+const ENCRYPTED_CACHE = PRIVATE_CACHE_PREFIX + "encrypted-" + CACHE_VERSION;
 
 const INDEX_URL = new URL("index.html", BASE_URL).href;
 const MANIFEST_URL = new URL("manifest.json", BASE_URL).href;
@@ -23,6 +24,9 @@ const ICON_192_URL = new URL("icons/icon-192.png", BASE_URL).href;
 const ICON_512_URL = new URL("icons/icon-512.png", BASE_URL).href;
 const APPLE_ICON_URL = new URL("icons/apple-touch-icon.png", BASE_URL).href;
 const BRAND_LOGO_URL = new URL("icons/mercado-pago-logo.png", BASE_URL).href;
+const CHART_JS_URL = new URL("vendor/chart.umd.js", BASE_URL).href;
+const LUCIDE_JS_URL = new URL("vendor/lucide.min.js", BASE_URL).href;
+const ENCRYPTED_DATA_URL = new URL("data.enc.json", BASE_URL).href;
 
 const LOCAL_SHELL = [
   APP_ROOT_URL,
@@ -31,7 +35,9 @@ const LOCAL_SHELL = [
   ICON_192_URL,
   ICON_512_URL,
   APPLE_ICON_URL,
-  BRAND_LOGO_URL
+  BRAND_LOGO_URL,
+  CHART_JS_URL,
+  LUCIDE_JS_URL
 ];
 const LOCAL_SHELL_SET = new Set(LOCAL_SHELL);
 const INDEX_PATH = new URL(INDEX_URL).pathname;
@@ -94,16 +100,51 @@ self.addEventListener("fetch", function (event) {
   }
 
   /*
-    Privacidad: solo el shell conocido puede entrar en Cache Storage. Cualquier
-    JSON, CSV, endpoint de perfiles o recurso futuro usa la red y nunca se guarda.
+    Solo se guarda el shell y el paquete cifrado. Nunca se cachean perfiles
+    descifrados, CSV ni respuestas de una API de promotores.
   */
   if (url.origin === self.location.origin) {
     const canonicalUrl = canonicalLocalUrl(url);
+    if (canonicalUrl === ENCRYPTED_DATA_URL) {
+      event.respondWith(networkFirstEncryptedData(request));
+      return;
+    }
     if (LOCAL_SHELL_SET.has(canonicalUrl)) {
       event.respondWith(staleWhileRevalidateShell(request, canonicalUrl, event));
     }
   }
 });
+
+async function networkFirstEncryptedData(request) {
+  const cache = await caches.open(ENCRYPTED_CACHE);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(function () {
+    controller.abort();
+  }, 4500);
+  try {
+    const response = await fetch(new Request(request, {
+      cache: "no-store",
+      credentials: "same-origin",
+      signal: controller.signal
+    }));
+    if (!response.ok) throw new Error("Encrypted data unavailable");
+    try {
+      await cache.put(ENCRYPTED_DATA_URL, response.clone());
+    } catch (error) {
+      // La falta de espacio de caché no debe impedir leer el corte de la red.
+    }
+    return response;
+  } catch (error) {
+    const cached = await cache.match(ENCRYPTED_DATA_URL);
+    if (cached) return cached;
+    return new Response("Encrypted data unavailable", {
+      status: 503,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 async function staleWhileRevalidateNavigation(request, event) {
   const requestUrl = new URL(request.url);

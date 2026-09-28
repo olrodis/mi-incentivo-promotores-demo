@@ -11,15 +11,14 @@
   <meta name="apple-mobile-web-app-title" content="Mi Incentivo">
   <meta name="format-detection" content="telephone=no">
   <meta name="mp-incentives-api" content="">
+  <meta name="mp-incentives-static-data" content="./data.enc.json">
   <title>Mi Incentivo · Mercado Pago</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://http2.mlstatic.com" crossorigin>
-  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" onload="window.dispatchEvent(new Event('vendor:chart-ready'))"></script>
-  <script async src="https://unpkg.com/lucide@1.46.0/dist/umd/lucide.min.js" onload="window.dispatchEvent(new Event('vendor:lucide-ready'))"></script>
+  <script async src="./vendor/chart.umd.js" integrity="sha256-KBLLiCX9xXRp6y97sFXpQpJE5ZmSBRHuR36ChJm2Mss=" onload="window.dispatchEvent(new Event('vendor:chart-ready'))"></script>
+  <script async src="./vendor/lucide.min.js" integrity="sha256-Yhrrt1MXM12oYeyq+R+soAbmDN9iMNCUgE4S36gmAwE=" onload="window.dispatchEvent(new Event('vendor:lucide-ready'))"></script>
   <style>
     @font-face{font-family:"Proxima Nova";src:url("https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-light.woff2") format("woff2");font-weight:300;font-display:swap}
     @font-face{font-family:"Proxima Nova";src:url("https://http2.mlstatic.com/ui/webfonts/v3.0.0/proxima-nova/proximanova-regular.woff2") format("woff2");font-weight:400;font-display:swap}
@@ -35,7 +34,7 @@
     .login-screen{position:relative;display:flex;min-height:100dvh;flex-direction:column;overflow:hidden;background:var(--canvas)}.login-hero{position:relative;min-height:45dvh;padding:calc(34px + var(--safe-top)) 28px 104px;overflow:hidden;background:radial-gradient(circle at 82% 10%,rgba(255,255,255,.2),transparent 12rem),linear-gradient(145deg,#008bc6 0%,#007daf 44%,#05658f 100%);color:#fff}.login-hero:before,.login-hero:after{position:absolute;content:"";border:1px solid rgba(255,255,255,.18);border-radius:50%}.login-hero:before{top:-118px;right:-104px;width:290px;height:290px}.login-hero:after{right:44px;bottom:-86px;width:190px;height:190px}
     .login-copy{position:relative;z-index:1;max-width:340px;margin-top:58px}.login-eyebrow{display:inline-flex;align-items:center;gap:7px;min-height:30px;margin-bottom:13px;padding:6px 11px;border:1px solid rgba(255,255,255,.26);border-radius:999px;background:rgba(15,83,121,.18);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}.login-copy h1{max-width:320px;margin:0;font-size:clamp(35px,10vw,46px);font-weight:600;line-height:.98;letter-spacing:-.045em}.login-copy p{max-width:320px;margin:17px 0 0;color:rgba(255,255,255,.88);font-size:16px;line-height:1.45}
     .login-panel{position:relative;z-index:3;width:calc(100% - 32px);margin:-66px auto 22px;padding:25px 22px 22px;border:1px solid rgba(255,255,255,.8);border-radius:28px;background:rgba(255,255,255,.97);box-shadow:0 26px 70px rgba(29,55,75,.2);backdrop-filter:blur(18px)}.panel-kicker{margin:0 0 5px;color:var(--mp-blue-dark);font-size:13px;font-weight:600;letter-spacing:.045em;text-transform:uppercase}.login-panel h2{margin:0;font-size:25px;font-weight:600;letter-spacing:-.025em}.login-panel>p{margin:7px 0 20px;color:var(--muted);font-size:14px}.field-label{display:block;margin-bottom:8px;font-size:14px;font-weight:600}.input-shell{position:relative}
-    .code-input{width:100%;min-height:56px;padding:0 55px 0 16px;border:1.5px solid #ccd9e2;border-radius:16px;background:#f9fbfc;color:var(--ink);font-size:19px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;transition:border-color 160ms,box-shadow 160ms,background 160ms}.code-input::placeholder{color:#a6b0ba;letter-spacing:.09em}.code-input:focus{border-color:var(--mp-blue);background:#fff;box-shadow:0 0 0 4px rgba(0,158,227,.1);outline:0}.code-input[aria-invalid=true]{border-color:var(--danger);box-shadow:0 0 0 4px rgba(217,48,62,.08)}
+    .code-input{width:100%;min-height:56px;padding:0 55px 0 16px;border:1.5px solid #ccd9e2;border-radius:16px;background:#f9fbfc;color:var(--ink);font-size:19px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;transition:border-color 160ms,box-shadow 160ms,background 160ms}.code-input::placeholder{color:#a6b0ba;letter-spacing:.09em}.code-input:focus{border-color:var(--mp-blue);background:#fff;box-shadow:0 0 0 4px rgba(0,158,227,.1);outline:0}.code-input[aria-invalid=true]{border-color:var(--danger);box-shadow:0 0 0 4px rgba(217,48,62,.08)}.code-input.long-code{font-size:14px;letter-spacing:.035em}
     .icon-button{display:inline-grid;min-width:44px;min-height:44px;place-items:center;border-radius:14px;background:transparent;color:inherit;transition:transform 140ms,background 140ms}.icon-button:active{transform:scale(.94)}.icon-button>svg,.icon-button>i,.icon-fallback{grid-area:1/1}.icon-fallback{font-size:12px;font-weight:600;line-height:1}.lucide-ready .icon-fallback{display:none}.input-action{position:absolute;top:6px;right:6px;color:var(--muted)}.field-error{min-height:20px;margin:7px 2px 0;color:var(--danger);font-size:13px;font-weight:600}
     .primary-button,.secondary-button{display:inline-flex;min-height:52px;align-items:center;justify-content:center;gap:9px;border-radius:16px;font-weight:600;transition:transform 150ms,filter 150ms,box-shadow 150ms}.primary-button{width:100%;margin-top:8px;padding:0 18px;background:linear-gradient(135deg,#007eb5,#00658f);color:#fff;box-shadow:0 12px 28px rgba(0,101,143,.27)}.primary-button:hover{filter:brightness(1.03)}.primary-button:active,.secondary-button:active{transform:translateY(1px) scale(.99)}.primary-button:disabled{cursor:wait;filter:grayscale(.2);opacity:.72}.button-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.38);border-top-color:#fff;border-radius:50%;animation:spin 700ms linear infinite}
     .demo-access{width:100%;min-height:44px;margin-top:10px;border-radius:14px;background:transparent;color:var(--mp-blue-dark);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}.privacy-note{display:flex;width:calc(100% - 48px);align-items:flex-start;gap:10px;margin:0 auto;padding:4px 0 calc(20px + var(--safe-bottom));color:var(--muted);font-size:12px;line-height:1.45}.privacy-note svg{flex:0 0 auto;margin-top:1px;color:var(--mp-blue-dark)}
@@ -167,7 +166,7 @@
         </div>
       </div>
       <div class="login-panel animate__animated animate__fadeInUp animate__faster">
-        <p class="panel-kicker">Acceso personal</p><h2>Ingresa tu clave</h2><p>Usa la clave de promotor de 6 caracteres que te fue asignada.</p>
+        <p class="panel-kicker">Acceso personal</p><h2>Ingresa tu clave</h2><p id="loginInstructions">Usa la clave de promotor de 6 caracteres que te fue asignada.</p>
         <form id="loginForm" novalidate>
           <label class="field-label" for="accessCode">Clave de promotor</label>
           <div class="input-shell">
@@ -230,7 +229,7 @@
               <div class="rule-row"><span class="rule-number">3</span><div><strong>Usamos el mix Point</strong><p>Repartimos las ventas extra entre Mini, Air y Smart 2 y las convertimos en unidades completas.</p></div></div>
               <div class="rule-row"><span class="rule-number">4</span><div><strong>Aplicamos la tarifa</strong><p>Cada unidad vale distinto según el producto y el nivel LOW, MID o HIGH.</p></div></div>
             </div>
-            <div class="bonus-note"><i data-lucide="sparkles" aria-hidden="true"></i><span>Si más de 8 de cada 10 ventas de la tienda fueron tuyas, contamos todas tus ventas registradas.</span></div>
+            <div class="bonus-note"><i data-lucide="sparkles" aria-hidden="true"></i><span>Si 8 de cada 10 ventas de la tienda fueron tuyas, o más, contamos todas tus ventas registradas.</span></div>
             <div class="section-heading"><div><h2>Cuánto vale cada unidad</h2><p>Depende de la tarifa de la tienda</p></div></div>
             <div style="overflow-x:auto"><table class="tariff-table" aria-describedby="tariffEstimateNote"><caption class="sr-only">Tarifas aproximadas de incentivo por nivel y producto</caption><thead><tr><th>Tarifa</th><th>Mini</th><th>Air</th><th>Smart 2</th></tr></thead><tbody><tr><td><strong>LOW</strong></td><td>$20*</td><td>$100*</td><td>$200*</td></tr><tr><td><strong>MID</strong></td><td>$40*</td><td>$200*</td><td>$350*</td></tr><tr><td><strong>HIGH</strong></td><td>$60*</td><td>$300*</td><td>$500*</td></tr></tbody></table></div>
             <aside class="estimate-note inside-card" id="tariffEstimateNote" role="note"><span class="estimate-mark" aria-hidden="true">*</span><span>Valores aproximados sujetos a auditoría final al cierre de mes.</span></aside>
@@ -270,12 +269,10 @@
     });
 
     /*
-      Datos ficticios para GitHub Pages. No pegues aquí el directorio real de
-      promotores: todo JavaScript publicado puede ser descargado e inspeccionado.
-      Para producción configura la meta "mp-incentives-api" con un endpoint HTTPS
-      que reciba POST {"code":"ABC123"} y devuelva
-      {"profile":{...},"sessionToken":"token-corto"}. Los refrescos usan el token
-      en memoria; la clave se elimina del campo inmediatamente.
+      Estos perfiles son ficticios y se usan solo si no hay fuente configurada.
+      En modo estático, data.enc.json contiene exclusivamente perfiles cifrados;
+      la clave de alta entropía se conserva solo en memoria durante esta sesión.
+      No publiques perfiles reales sin cifrar en el HTML ni en el repositorio.
     */
     const DEMO_DATA = Object.freeze({
       MPD001: {
@@ -364,10 +361,76 @@
     });
 
     /* ENGINE_START */
-    function roundSpecial(number) {
-      const value = Number(number) || 0;
-      const fraction = value - Math.floor(value);
-      return fraction > 0.5 ? Math.ceil(value) : Math.floor(value);
+    function allocateLargestRemainder(incremental, productSales, totalSales) {
+      const unitsToAllocate = Math.max(0, Math.round(Number(incremental) || 0));
+      const denominator = Math.max(0, Math.round(Number(totalSales) || 0));
+      if (unitsToAllocate === 0) return [0, 0, 0];
+      if (denominator <= 0) throw new Error("INVALID_STORE_TOTAL");
+
+      const entries = productSales.map(function (value, index) {
+        const numerator = Math.max(0, Math.round(Number(value) || 0)) * unitsToAllocate;
+        return {
+          index: index,
+          units: Math.floor(numerator / denominator),
+          remainder: numerator % denominator,
+          tiePriority: index
+        };
+      });
+      let assigned = entries.reduce(function (sum, entry) { return sum + entry.units; }, 0);
+      const remaining = unitsToAllocate - assigned;
+      entries.sort(function (left, right) {
+        if (right.remainder !== left.remainder) return right.remainder - left.remainder;
+        /* En empate: Smart 2, después Air y después Mini. */
+        return right.tiePriority - left.tiePriority;
+      });
+      for (let index = 0; index < remaining; index += 1) entries[index].units += 1;
+      entries.sort(function (left, right) { return left.index - right.index; });
+      const result = entries.map(function (entry) { return entry.units; });
+      if (result.reduce(function (sum, value) { return sum + value; }, 0) !== unitsToAllocate) {
+        throw new Error("INVALID_UNIT_ALLOCATION");
+      }
+      return result;
+    }
+
+    function applyOfficialCalculation(store, official, fallbackProductivity) {
+      const eligibility = String(official.eligibilityStatus || "").toUpperCase();
+      const band = String(official.nivelTienda || "").toUpperCase();
+      const denominator = Number(official.participationDenominator || 0);
+      const numerator = Number(official.participationNumerator || 0);
+      const payment = official.pagoOficial == null
+        ? Number(official.pagoCalculado || 0)
+        : Number(official.pagoOficial || 0);
+
+      store.nivelTienda = band || store.nivelTienda;
+      store.incremental = Math.max(0, Number(official.incremental || 0));
+      store.unidMini = Math.max(0, Number(official.unidMini || 0));
+      store.unidAir = Math.max(0, Number(official.unidAir || 0));
+      store.unidSmart = Math.max(0, Number(official.unidSmart || 0));
+      store.pctProductividad = denominator > 0 ? numerator / denominator * 100 : fallbackProductivity;
+      store.paymentStatus = String(official.auditStatus || "PRELIMINARY").toUpperCase();
+      store.rulesVersion = String(official.rulesVersion || "");
+      store.reassignmentApplied = official.reassignmentApplied === true;
+      store.reassignmentOverage = official.reassignmentOverage && typeof official.reassignmentOverage === "object"
+        ? Object.assign({}, official.reassignmentOverage)
+        : { mini: 0, air: 0, smart: 0, total: 0 };
+      store.auditWarnings = Array.isArray(official.warnings) ? official.warnings.slice() : [];
+      store.pagoCalculado = Math.max(0, Number(official.pagoCalculado || 0));
+      store.pagoOficial = official.pagoOficial == null ? null : Math.max(0, Number(official.pagoOficial || 0));
+      store.pago = Math.floor(Math.max(0, payment));
+
+      if (eligibility === "DIRECT_OVERRIDE_GTE_MAXIMUM") store.estado = "BONUS";
+      else if (eligibility === "BELOW_MINIMUM") store.estado = "NA";
+      else if (eligibility === "NO_PAYMENT") store.estado = "SI";
+      else store.estado = store.nivelTienda;
+      store.nivel = store.estado;
+      store.tarifa = eligibility === "ELIGIBLE" || eligibility === "DIRECT_OVERRIDE_GTE_MAXIMUM"
+        ? {
+            Mini: Math.max(0, Number(official.tarifaMini || 0)),
+            Air: Math.max(0, Number(official.tarifaAir || 0)),
+            Smart: Math.max(0, Number(official.tarifaSmart || 0))
+          }
+        : null;
+      return store;
     }
 
     function computeStore(input) {
@@ -405,6 +468,10 @@
       store.unidSmart = 0;
       store.tarifa = null;
 
+      if (store.official && typeof store.official === "object") {
+        return applyOfficialCalculation(store, store.official, productivity);
+      }
+
       if (tickets === 0 || storeLevel === "SIN" || sales <= organicBase) {
         store.estado = "SI";
         store.pago = 0;
@@ -422,7 +489,7 @@
       const tariff = TARIFFS[storeLevel];
       store.tarifa = tariff;
 
-      if (productivity > MAX_NORMAL_PRODUCTIVITY) {
+      if (productivity >= MAX_NORMAL_PRODUCTIVITY) {
         store.estado = "BONUS";
         store.unidMini = ticketsMini;
         store.unidAir = ticketsAir;
@@ -439,24 +506,30 @@
       store.estado = storeLevel;
       store.nivel = storeLevel;
       const incremental = sales - organicBase;
-      const miniShare = sales > 0 ? salesMini / sales : 0;
-      const airShare = sales > 0 ? salesAir / sales : 0;
-      const smartShare = sales > 0 ? salesSmart / sales : 0;
-      store.unidMini = roundSpecial(miniShare * incremental);
-      store.unidAir = roundSpecial(airShare * incremental);
-      store.unidSmart = roundSpecial(smartShare * incremental);
+      const allocatedUnits = allocateLargestRemainder(
+        incremental,
+        [salesMini, salesAir, salesSmart],
+        sales
+      );
+      store.unidMini = allocatedUnits[0];
+      store.unidAir = allocatedUnits[1];
+      store.unidSmart = allocatedUnits[2];
       store.pago = Math.floor(
         store.unidMini * tariff.Mini +
         store.unidAir * tariff.Air +
         store.unidSmart * tariff.Smart
       );
+
       return store;
     }
     /* ENGINE_END */
 
     const VALID_VIEWS = new Set(["home", "stores", "calculator", "profile"]);
     const SESSION_KEY = "mp-incentivos-demo-session";
+    const STATIC_DATA_URL = (document.querySelector('meta[name="mp-incentives-static-data"]')?.content || "").trim();
     const API_URL = (document.querySelector('meta[name="mp-incentives-api"]')?.content || "").trim();
+    const ACCESS_CODE_LENGTH = STATIC_DATA_URL ? 26 : 6;
+    const ACCESS_MODE = STATIC_DATA_URL ? "static" : API_URL ? "api" : "demo";
     const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const state = {
       activeCode: "",
@@ -469,6 +542,8 @@
       chart: null,
       deferredInstallPrompt: null,
       lastSyncAt: null,
+      snapshotVersion: "",
+      lastBackgroundRefreshAt: 0,
       calculationStoreIndex: 0,
       toastTimer: null,
       updateRequested: false,
@@ -516,7 +591,7 @@
       const raw = Math.max(0, Number(value) || 0);
       let whole = Math.round(raw);
       if (raw < MIN_PRODUCTIVITY && whole >= MIN_PRODUCTIVITY) whole = MIN_PRODUCTIVITY - 1;
-      if (raw > MAX_NORMAL_PRODUCTIVITY && whole <= MAX_NORMAL_PRODUCTIVITY) whole = MAX_NORMAL_PRODUCTIVITY + 1;
+      if (raw < MAX_NORMAL_PRODUCTIVITY && whole >= MAX_NORMAL_PRODUCTIVITY) whole = MAX_NORMAL_PRODUCTIVITY - 1;
       return whole;
     }
 
@@ -544,6 +619,7 @@
     }
 
     function cloneProfile(profile) {
+      const apiMeta = profile && profile.apiMeta && typeof profile.apiMeta === "object" ? profile.apiMeta : {};
       return {
         nombre: String(profile.nombre || ""),
         supervisor: String(profile.supervisor || ""),
@@ -552,6 +628,11 @@
         periodDay: Math.max(1, Number(profile.periodDay || DATA_CUT_DAY)),
         periodDays: Math.max(1, Number(profile.periodDays || DAYS_IN_PERIOD)),
         periodLabel: String(profile.periodLabel || "Periodo actual"),
+        cutId: String(apiMeta.cutId || profile.cutId || ""),
+        sourceCutAt: String(apiMeta.sourceCutAt || profile.sourceCutAt || ""),
+        auditStatus: String(apiMeta.auditStatus || profile.auditStatus || ""),
+        paymentIsEstimate: apiMeta.paymentIsEstimate !== false,
+        rulesVersion: String(apiMeta.rulesVersion || profile.rulesVersion || ""),
         stores: Array.isArray(profile.stores) ? profile.stores.map(computeStore) : []
       };
     }
@@ -572,7 +653,7 @@
     }
 
     function normalizeCode(value) {
-      return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+      return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, ACCESS_CODE_LENGTH);
     }
 
     function statusInfo(status) {
@@ -639,7 +720,7 @@
       const basePassed = sales > base;
       const promoterReady = registered > 0 && percentage >= MIN_PRODUCTIVITY;
       const ready = basePassed && promoterReady;
-      const bonus = ready && percentage > MAX_NORMAL_PRODUCTIVITY;
+      const bonus = ready && percentage >= MAX_NORMAL_PRODUCTIVITY;
       const neededNewSales = promoterReady ? 0 : additionalPromoterSalesToReach(sales, registered, MIN_PRODUCTIVITY);
       let kicker;
       let title;
@@ -661,7 +742,7 @@
         icon = "circle-alert";
       } else if (bonus) {
         kicker = "Pago especial activo";
-        title = formatProgressPercent(percentage) + " · superaste 80%";
+        title = formatProgressPercent(percentage) + " · llegaste al pago especial";
         action = "Cuentan todas tus ventas registradas en esta tienda.";
         tone = "bonus";
         icon = "sparkles";
@@ -701,7 +782,7 @@
       const ariaLabel = "Tu porcentaje es " + formatProgressPercent(data.percentage) + ". La meta mínima para activar el pago es 35%. " + ratioCopy;
       const ariaValue = Math.min(100, wholePercentForDisplay(data.percentage));
       const ariaValueText = formatProgressPercent(data.percentage);
-      return '<section class="eligibility-card" aria-label="Paso para activar tu pago"><p class="eligibility-kicker"><i data-lucide="zap" aria-hidden="true"></i>' + escapeHtml(data.kicker) + '</p><div class="eligibility-head"><div class="eligibility-score"><strong>' + escapeHtml(data.title) + '</strong><span>' + escapeHtml(ratioCopy) + '</span></div><span class="eligibility-target-pill">Mínimo 35%</span></div><div class="eligibility-track" role="progressbar" aria-label="' + escapeHtml(ariaLabel) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + ariaValue + '" aria-valuetext="' + escapeHtml(ariaValueText) + '"><span class="' + fillClass + '" style="width:' + barPercent + '%"></span><span class="eligibility-marker" style="left:35%" aria-hidden="true"></span><span class="eligibility-marker bonus" style="left:80%" aria-hidden="true"></span></div><div class="eligibility-scale" aria-hidden="true"><span class="minimum">35% mínimo</span><span class="special">&gt;80% especial</span></div><div class="eligibility-action ' + data.tone + '"><i data-lucide="' + data.icon + '" aria-hidden="true"></i><span>' + escapeHtml(data.action) + '</span></div></section>';
+      return '<section class="eligibility-card" aria-label="Paso para activar tu pago"><p class="eligibility-kicker"><i data-lucide="zap" aria-hidden="true"></i>' + escapeHtml(data.kicker) + '</p><div class="eligibility-head"><div class="eligibility-score"><strong>' + escapeHtml(data.title) + '</strong><span>' + escapeHtml(ratioCopy) + '</span></div><span class="eligibility-target-pill">Mínimo 35%</span></div><div class="eligibility-track" role="progressbar" aria-label="' + escapeHtml(ariaLabel) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + ariaValue + '" aria-valuetext="' + escapeHtml(ariaValueText) + '"><span class="' + fillClass + '" style="width:' + barPercent + '%"></span><span class="eligibility-marker" style="left:35%" aria-hidden="true"></span><span class="eligibility-marker bonus" style="left:80%" aria-hidden="true"></span></div><div class="eligibility-scale" aria-hidden="true"><span class="minimum">35% mínimo</span><span class="special">80% especial</span></div><div class="eligibility-action ' + data.tone + '"><i data-lucide="' + data.icon + '" aria-hidden="true"></i><span>' + escapeHtml(data.action) + '</span></div></section>';
     }
 
     function promoterCheckFor(store) {
@@ -764,8 +845,82 @@
       };
     }
 
+    function decodeBase64Url(value, expectedLength) {
+      if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) throw new Error("DATA_NOT_READY");
+      try {
+        const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+        const bytes = Uint8Array.from(atob(padded), function (character) { return character.charCodeAt(0); });
+        if (expectedLength && bytes.length !== expectedLength) throw new Error("DATA_NOT_READY");
+        return bytes;
+      } catch (error) {
+        throw new Error("DATA_NOT_READY");
+      }
+    }
+
+    async function authenticateStatic(code) {
+      if (window.location.protocol === "file:" || !window.isSecureContext || !window.crypto || !window.crypto.subtle) {
+        throw new Error("CRYPTO_UNAVAILABLE");
+      }
+      const controller = new AbortController();
+      const timeout = window.setTimeout(function () { controller.abort(); }, 12000);
+      let bundle;
+      try {
+        const response = await fetch(STATIC_DATA_URL, {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store",
+          credentials: "omit",
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error("DATA_UNAVAILABLE");
+        bundle = await response.json();
+      } catch (error) {
+        if (error && error.name === "AbortError") throw error;
+        throw new Error("DATA_UNAVAILABLE");
+      } finally {
+        window.clearTimeout(timeout);
+      }
+      if (!bundle || bundle.schema !== "mi-incentivo-encrypted-v1" ||
+          typeof bundle.snapshotVersion !== "string" || !bundle.snapshotVersion ||
+          !bundle.profiles || typeof bundle.profiles !== "object" || Array.isArray(bundle.profiles)) {
+        throw new Error("DATA_NOT_READY");
+      }
+      const salt = decodeBase64Url(bundle.salt, 16);
+      const codeBytes = new TextEncoder().encode(code);
+      const indexedBytes = new Uint8Array(salt.length + codeBytes.length);
+      indexedBytes.set(salt);
+      indexedBytes.set(codeBytes, salt.length);
+      const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", indexedBytes));
+      const profileId = Array.from(digest, function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
+      const sealedProfile = bundle.profiles[profileId];
+      if (!sealedProfile) throw new Error("INVALID_CODE");
+      const iv = decodeBase64Url(sealedProfile.iv, 12);
+      const ciphertext = decodeBase64Url(sealedProfile.ciphertext);
+      if (ciphertext.length < 17) throw new Error("DATA_NOT_READY");
+      try {
+        const keyMaterial = await crypto.subtle.importKey("raw", codeBytes, "HKDF", false, ["deriveKey"]);
+        const aesKey = await crypto.subtle.deriveKey({
+          name: "HKDF",
+          hash: "SHA-256",
+          salt: salt,
+          info: new TextEncoder().encode("mi-incentivo-aes-gcm-v1")
+        }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+        const plaintextBytes = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, aesKey, ciphertext);
+        const plaintext = JSON.parse(new TextDecoder().decode(plaintextBytes));
+        const profilePayload = plaintext && plaintext.profile;
+        if (!profilePayload || !Array.isArray(profilePayload.stores) || profilePayload.stores.length === 0) {
+          throw new Error("DATA_NOT_READY");
+        }
+        const profileWithMeta = Object.assign({}, profilePayload, { apiMeta: plaintext.meta || {} });
+        return { profile: cloneProfile(profileWithMeta), sessionToken: "", snapshotVersion: bundle.snapshotVersion };
+      } catch (error) {
+        throw new Error("DATA_NOT_READY");
+      }
+    }
+
     async function authenticate(code, sessionToken) {
-      if (!API_URL) {
+      if (ACCESS_MODE === "static") return authenticateStatic(code);
+      if (ACCESS_MODE === "demo") {
         await new Promise(function (resolve) { window.setTimeout(resolve, 420); });
         const demoProfile = DEMO_DATA[code];
         if (!demoProfile) throw new Error("INVALID_CODE");
@@ -774,27 +929,36 @@
       const controller = new AbortController();
       const timeout = window.setTimeout(function () { controller.abort(); }, 10000);
       try {
-        const requestBody = sessionToken ? { action: "refresh" } : { code: code };
-        const requestHeaders = { "Content-Type": "application/json", "Accept": "application/json" };
-        if (sessionToken) requestHeaders.Authorization = "Bearer " + sessionToken;
+        const requestBody = sessionToken
+          ? { action: "refresh", sessionToken: sessionToken }
+          : { action: "login", code: code };
+        const requestHeaders = { "Content-Type": "text/plain;charset=UTF-8", "Accept": "application/json" };
         const response = await fetch(API_URL, {
           method: "POST",
           headers: requestHeaders,
           body: JSON.stringify(requestBody),
           cache: "no-store",
           credentials: "omit",
+          redirect: "follow",
           signal: controller.signal
         });
-        if (response.status === 401 || response.status === 404) throw new Error("INVALID_CODE");
         if (!response.ok) throw new Error("API_ERROR");
         const payload = await response.json();
+        if (payload && payload.ok === false) {
+          const errorCode = String(payload.error && payload.error.code || "");
+          if (errorCode === "INVALID_CREDENTIALS") throw new Error("INVALID_CODE");
+          if (errorCode === "RATE_LIMITED") throw new Error("RATE_LIMITED");
+          if (errorCode === "DATA_NOT_READY") throw new Error("DATA_NOT_READY");
+          throw new Error("API_ERROR");
+        }
         const profilePayload = payload && payload.profile ? payload.profile : payload;
         if (!profilePayload || !Array.isArray(profilePayload.stores) || profilePayload.stores.length === 0) {
           throw new Error("INVALID_RESPONSE");
         }
         const nextToken = String(payload.sessionToken || payload.token || sessionToken || "");
         if (!nextToken) throw new Error("INVALID_RESPONSE");
-        return { profile: cloneProfile(profilePayload), sessionToken: nextToken };
+        const profileWithMeta = Object.assign({}, profilePayload, { apiMeta: payload.meta || {} });
+        return { profile: cloneProfile(profileWithMeta), sessionToken: nextToken };
       } finally {
         window.clearTimeout(timeout);
       }
@@ -820,25 +984,40 @@
       const code = normalizeCode(elements.accessCode.value);
       elements.accessCode.value = code;
       setLoginError("");
-      if (!/^[A-Z0-9]{6}$/.test(code)) {
-        setLoginError("Escribe una clave válida de 6 caracteres.");
+      if (code.length !== ACCESS_CODE_LENGTH || !/^[A-Z0-9]+$/.test(code)) {
+        setLoginError("Escribe una clave válida de " + ACCESS_CODE_LENGTH + " caracteres.");
         elements.accessCode.focus();
         return;
       }
       setLoginLoading(true);
       try {
         const authentication = await authenticate(code, "");
-        state.activeCode = API_URL ? "" : code;
+        state.activeCode = ACCESS_MODE === "api" ? "" : code;
         state.sessionToken = authentication.sessionToken;
+        state.snapshotVersion = authentication.snapshotVersion || "";
         state.promoter = preparePromoter(authentication.profile);
         state.lastSyncAt = new Date();
-        if (!API_URL) sessionStorage.setItem(SESSION_KEY, code);
+        state.lastBackgroundRefreshAt = Date.now();
+        if (ACCESS_MODE === "demo") sessionStorage.setItem(SESSION_KEY, code);
         elements.accessCode.value = "";
         openDashboard();
       } catch (error) {
-        setLoginError(error && error.message === "INVALID_CODE"
-          ? "La clave no es válida. Revisa los 6 caracteres."
-          : "No pudimos consultar tu información. Intenta nuevamente.");
+        const errorCode = error && error.message;
+        if (errorCode === "INVALID_CODE") {
+          setLoginError("La clave no es válida. Revisa los " + ACCESS_CODE_LENGTH + " caracteres.");
+        } else if (errorCode === "RATE_LIMITED") {
+          setLoginError("Hiciste varios intentos. Espera unos minutos y vuelve a probar.");
+        } else if (errorCode === "DATA_NOT_READY") {
+          setLoginError("El corte no está disponible ahora. Intenta nuevamente más tarde.");
+        } else if (errorCode === "CRYPTO_UNAVAILABLE") {
+          setLoginError("Abre la app desde GitHub Pages o localhost; un archivo abierto directamente no puede consultar el corte.");
+        } else if (errorCode === "DATA_UNAVAILABLE") {
+          setLoginError("No pudimos cargar el corte. Revisa tu conexión e intenta de nuevo.");
+        } else if (error && error.name === "AbortError") {
+          setLoginError("La consulta tardó demasiado. Revisa tu conexión e intenta de nuevo.");
+        } else {
+          setLoginError("No pudimos consultar tu información. Intenta nuevamente.");
+        }
         elements.accessCode.focus();
       } finally {
         setLoginLoading(false);
@@ -875,12 +1054,16 @@
     }
 
     function renderHeader() {
-      elements.syncTime.textContent = API_URL && state.lastSyncAt
+      elements.syncTime.textContent = ACCESS_MODE === "api" && state.lastSyncAt
         ? state.lastSyncAt.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
         : "Día " + state.promoter.periodDay;
       elements.syncStatusLabel.textContent = navigator.onLine
-        ? (API_URL ? "Información actualizada" : "Demo · datos de ejemplo")
-        : "Modo sin conexión";
+        ? (ACCESS_MODE === "static"
+            ? "Avance al corte · pago estimado"
+            : ACCESS_MODE === "api"
+            ? (state.promoter.paymentIsEstimate ? "Avance real · pago estimado" : "Corte final validado")
+            : "Demo · datos de ejemplo")
+        : (ACCESS_MODE === "static" ? "Corte guardado · sin conexión" : "Modo sin conexión");
     }
 
     function renderHome(renderChart) {
@@ -1074,13 +1257,13 @@
         return Math.round(Number(product.storeSales || 0) / salesTotal * 100);
       });
       const mixProof = isBonus
-        ? '<div class="mix-proof is-bonus"><div class="mix-proof-head"><span class="mix-proof-icon"><i data-lucide="badge-check" aria-hidden="true"></i></span><div><strong>Aquí no aplicamos el mix</strong><p>Superaste 8 de cada 10 ventas. Por eso entran directamente tus ventas registradas por producto.</p></div></div></div>'
-        : '<div class="mix-proof"><div class="mix-proof-head"><span class="mix-proof-icon"><i data-lucide="chart-pie" aria-hidden="true"></i></span><div><strong>Así usamos el mix Point</strong><p>Vemos qué parte de las ' + formatInteger(store.ventasMes) + ' ventas fue Mini, Air o Smart 2. Ese mismo reparto se aplica a las ' + formatInteger(store.incremental) + ' ventas extra.</p></div></div><div class="mix-proof-bar" role="img" aria-label="Mix de la tienda: Mini ' + mixPercentages[0] + '%, Air ' + mixPercentages[1] + '%, Smart 2 ' + mixPercentages[2] + '%"><span class="mix-proof-segment mini" style="width:' + (Number(store.ventasMini || 0) / salesTotal * 100) + '%"></span><span class="mix-proof-segment air" style="width:' + (Number(store.ventasAir || 0) / salesTotal * 100) + '%"></span><span class="mix-proof-segment smart" style="width:' + (Number(store.ventasSmart || 0) / salesTotal * 100) + '%"></span></div><div class="mix-proof-legend">' + products.map(function (product, index) { return '<div class="mix-proof-legend-item"><span><i class="' + product.className + '"></i>' + product.shortName + '</span><b>' + mixPercentages[index] + '%</b></div>'; }).join("") + '</div><div class="mix-rounding-note"><i data-lucide="info" aria-hidden="true"></i><span>Convertimos cada resultado en unidades completas: más de medio sube; medio o menos baja.</span></div></div>';
+        ? '<div class="mix-proof is-bonus"><div class="mix-proof-head"><span class="mix-proof-icon"><i data-lucide="badge-check" aria-hidden="true"></i></span><div><strong>Aquí no aplicamos el mix</strong><p>Llegaste a 8 de cada 10 ventas, o más. Por eso entran directamente tus ventas registradas por producto.</p></div></div></div>'
+        : '<div class="mix-proof"><div class="mix-proof-head"><span class="mix-proof-icon"><i data-lucide="chart-pie" aria-hidden="true"></i></span><div><strong>Así usamos el mix Point</strong><p>Vemos qué parte de las ' + formatInteger(store.ventasMes) + ' ventas fue Mini, Air o Smart 2. Ese mismo reparto se aplica a las ' + formatInteger(store.incremental) + ' ventas extra.</p></div></div><div class="mix-proof-bar" role="img" aria-label="Mix de la tienda: Mini ' + mixPercentages[0] + '%, Air ' + mixPercentages[1] + '%, Smart 2 ' + mixPercentages[2] + '%"><span class="mix-proof-segment mini" style="width:' + (Number(store.ventasMini || 0) / salesTotal * 100) + '%"></span><span class="mix-proof-segment air" style="width:' + (Number(store.ventasAir || 0) / salesTotal * 100) + '%"></span><span class="mix-proof-segment smart" style="width:' + (Number(store.ventasSmart || 0) / salesTotal * 100) + '%"></span></div><div class="mix-proof-legend">' + products.map(function (product, index) { return '<div class="mix-proof-legend-item"><span><i class="' + product.className + '"></i>' + product.shortName + '</span><b>' + mixPercentages[index] + '%</b></div>'; }).join("") + '</div><div class="mix-rounding-note"><i data-lucide="info" aria-hidden="true"></i><span>Repartimos todas las ventas extra en unidades completas. Si sobra alguna, va primero al producto con mayor residuo del mix.</span></div></div>';
       const rows = products.map(function (product, index) {
         const subtotal = Number(product.units || 0) * Number(product.rate || 0);
         const rawUnits = Number(product.storeSales || 0) / salesTotal * Number(store.incremental || 0);
         const unitProof = isBonus
-          ? '<div class="unit-proof is-bonus"><div class="unit-proof-row"><span>Regla de más de 8 de cada 10</span><strong>' + formatInteger(product.promoterSales) + ' tuyas</strong></div><div class="unit-proof-equation"><span>Entran completas</span><b>' + formatInteger(product.units) + ' pagables</b></div></div>'
+          ? '<div class="unit-proof is-bonus"><div class="unit-proof-row"><span>Regla de 8 de cada 10 o más</span><strong>' + formatInteger(product.promoterSales) + ' tuyas</strong></div><div class="unit-proof-equation"><span>Entran completas</span><b>' + formatInteger(product.units) + ' pagables</b></div></div>'
           : '<div class="unit-proof"><div class="unit-proof-row"><span>Mix de la tienda</span><strong>' + formatInteger(product.storeSales) + ' de ' + formatInteger(store.ventasMes) + ' = ' + mixPercentages[index] + '%</strong></div><div class="unit-proof-equation"><span>' + formatInteger(store.incremental) + ' extras × ' + formatInteger(product.storeSales) + ' ÷ ' + formatInteger(store.ventasMes) + ' = ' + formatCalculationNumber(rawUnits) + '</span><b>→ ' + formatInteger(product.units) + ' pagables</b></div></div>';
         return '<div class="pay-product"><div class="pay-product-top"><strong>' + product.name + '</strong><b>' + paymentVisible(subtotal) + '</b></div><div class="pay-product-numbers"><div class="pay-number store"><span>Tienda</span><strong>' + formatInteger(product.storeSales) + '</strong></div><div class="pay-number promoter"><span>Tú</span><strong>' + formatInteger(product.promoterSales) + '</strong></div><div class="pay-number"><span>Entran al pago</span><strong>' + formatInteger(product.units) + '</strong></div></div>' + unitProof + '<div class="pay-equation">' + formatInteger(product.units) + ' × ' + formatMoney(product.rate) + ' = <strong>' + paymentVisible(subtotal) + '</strong></div></div>';
       }).join("");
@@ -1109,7 +1292,7 @@
       elements.profileName.textContent = promoter.nombre;
       elements.profileRoute.textContent = promoter.ruta + " · " + promoter.agencia;
       const rows = [
-        { icon: "badge", label: "Clave", value: API_URL ? "Sesión por API" : maskCode(state.activeCode) },
+        { icon: "badge", label: "Acceso", value: ACCESS_MODE === "demo" ? maskCode(state.activeCode) : "Clave personal" },
         { icon: "route", label: "Ruta", value: promoter.ruta || "Sin asignar" },
         { icon: "building-2", label: "Agencia", value: promoter.agencia || "Sin asignar" },
         { icon: "users-round", label: "Supervisión", value: promoter.supervisor || "Sin asignar" }
@@ -1162,7 +1345,19 @@
     }
 
     function applyModeCopy() {
-      if (API_URL) {
+      if (ACCESS_MODE === "static") {
+        elements.loginInstructions.textContent = "Escribe o pega tu clave personal de 26 caracteres. Si viene separada por guiones, puedes pegarla completa.";
+        elements.codeHelp.textContent = "La clave combina 26 letras y números. Puedes pegarla con espacios o guiones.";
+        elements.accessCode.maxLength = 128;
+        elements.accessCode.minLength = 26;
+        elements.accessCode.removeAttribute("pattern");
+        elements.accessCode.placeholder = "Tu clave personal";
+        elements.accessCode.autocomplete = "off";
+        elements.accessCode.classList.add("long-code");
+        elements.loginPrivacyCopy.textContent = "No compartas tu clave. Esta app no la guarda para el próximo ingreso. Cierra sesión si compartes el teléfono.";
+        elements.profileFootnote.textContent = "Datos al corte publicado · Pago aproximado sujeto a auditoría final. Para ver nuevos cambios, toca Actualizar.";
+        elements.privacyDialogDescription.textContent = "Tu clave abre únicamente tu perfil dentro del corte cifrado. La app la mantiene solo mientras la usas; cierra sesión si compartes el teléfono. El pago mostrado es aproximado y puede cambiar tras la auditoría final.";
+      } else if (ACCESS_MODE === "api") {
         elements.loginPrivacyCopy.textContent = "No compartas tu clave. Cierra sesión al terminar, especialmente si usas un dispositivo compartido.";
         elements.profileFootnote.textContent = "Conexión por API · El token permanece en memoria y las respuestas de perfiles no entran en el caché de la aplicación.";
         elements.privacyDialogDescription.textContent = "Esta capa cliente no sustituye la autenticación del servicio. El token permanece en memoria; al cerrar sesión se eliminan del DOM los datos mostrados y el Service Worker no almacena respuestas de perfiles o pagos.";
@@ -1185,8 +1380,9 @@
       showToast(state.moneyVisible ? "Montos visibles" : "Montos ocultos");
     }
 
-    async function refreshProfile() {
+    async function refreshProfile(options) {
       if (state.isRefreshing || (!state.activeCode && !state.sessionToken)) return;
+      const silent = options && options.silent === true;
       state.isRefreshing = true;
       const profileBeforeRefresh = state.promoter;
       elements.headerRefreshButton.disabled = true;
@@ -1197,14 +1393,30 @@
       try {
         const authentication = await authenticate(state.activeCode, state.sessionToken);
         if (state.promoter !== profileBeforeRefresh) return;
+        const previousVersion = state.snapshotVersion;
         state.sessionToken = authentication.sessionToken;
+        state.snapshotVersion = authentication.snapshotVersion || "";
         state.promoter = preparePromoter(authentication.profile);
         state.lastSyncAt = new Date();
+        state.lastBackgroundRefreshAt = Date.now();
         renderAll();
-        showToast("Información actualizada");
+        if (!silent || (ACCESS_MODE === "static" && state.snapshotVersion !== previousVersion)) {
+          showToast(ACCESS_MODE === "static" && state.snapshotVersion === previousVersion
+            ? "El corte sigue igual"
+            : "Información actualizada");
+        }
       } catch (error) {
         elements.syncStatusLabel.textContent = navigator.onLine ? "No se pudo actualizar" : "Modo sin conexión";
-        showToast("No pudimos actualizar. Conservamos tu última vista.");
+        const errorCode = error && error.message;
+        if (silent) {
+          return;
+        } else if (errorCode === "RATE_LIMITED") {
+          showToast("Espera unos minutos antes de volver a actualizar.");
+        } else if (errorCode === "DATA_NOT_READY") {
+          showToast("El nuevo corte sigue en revisión. Conservamos tu información anterior.");
+        } else {
+          showToast("No pudimos actualizar. Conservamos tu información anterior.");
+        }
       } finally {
         const currentIcon = elements.headerRefreshButton.querySelector("svg");
         if (currentIcon) currentIcon.classList.remove("is-spinning");
@@ -1212,6 +1424,14 @@
         elements.headerRefreshButton.setAttribute("aria-busy", "false");
         state.isRefreshing = false;
       }
+    }
+
+    function maybeRefreshStaticOnReturn() {
+      if (ACCESS_MODE !== "static" || !state.promoter || state.isRefreshing ||
+          !navigator.onLine || document.visibilityState !== "visible") return;
+      if (Date.now() - state.lastBackgroundRefreshAt < 300000) return;
+      state.lastBackgroundRefreshAt = Date.now();
+      refreshProfile({ silent: true });
     }
 
     function logout() {
@@ -1228,6 +1448,8 @@
       state.storeFilter = "all";
       state.moneyVisible = false;
       state.lastSyncAt = null;
+      state.snapshotVersion = "";
+      state.lastBackgroundRefreshAt = 0;
       state.calculationStoreIndex = 0;
       clearSensitiveDom();
       elements.dashboardScreen.hidden = true;
@@ -1296,9 +1518,11 @@
       elements.offlineBanner.hidden = online;
       elements.syncDot.classList.toggle("offline", !online);
       elements.syncStatusLabel.textContent = online
-        ? (API_URL ? "Con conexión" : "Demo · datos de ejemplo")
-        : "Modo sin conexión";
-      if (!online && notify !== false) showToast("Sin conexión · La demo sigue disponible");
+        ? (ACCESS_MODE === "static" ? "Avance al corte · pago estimado" : ACCESS_MODE === "api" ? "Con conexión" : "Demo · datos de ejemplo")
+        : (ACCESS_MODE === "static" ? "Corte guardado · sin conexión" : "Modo sin conexión");
+      if (!online && notify !== false) showToast(ACCESS_MODE === "demo"
+        ? "Sin conexión · La demo sigue disponible"
+        : "Sin conexión · Conservamos el último corte disponible");
     }
 
     function refreshIcons() {
@@ -1371,11 +1595,13 @@
         renderCalculator();
         refreshIcons();
       });
-      window.addEventListener("online", function () { updateConnectivity(true); });
+      window.addEventListener("online", function () { updateConnectivity(true); maybeRefreshStaticOnReturn(); });
       window.addEventListener("offline", function () { updateConnectivity(true); });
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "hidden") hideMoneyForPrivacy();
+        else maybeRefreshStaticOnReturn();
       });
+      window.addEventListener("focus", maybeRefreshStaticOnReturn);
       window.addEventListener("popstate", function () {
         const view = window.location.hash.replace("#", "");
         if (state.promoter && VALID_VIEWS.has(view)) showView(view, { fromHistory: true, instant: true });
@@ -1436,6 +1662,7 @@
     function cacheElements() {
       [
         "loginScreen", "dashboardScreen", "loginForm", "accessCode", "toggleCodeVisibility",
+        "loginInstructions", "codeHelp",
         "loginError", "loginButton", "loginButtonLabel", "loginButtonIcon", "loginSpinner",
         "demoCodeButton", "syncDot", "syncStatusLabel", "syncTime", "offlineBanner",
         "headerRefreshButton", "headerProfileButton", "greetingText", "periodPill", "paymentAmount",
@@ -1471,7 +1698,8 @@
       registerServiceWorker();
       const hashView = window.location.hash.replace("#", "");
       state.pendingView = VALID_VIEWS.has(hashView) ? hashView : "home";
-      if (API_URL) {
+      if (ACCESS_MODE !== "demo") {
+        sessionStorage.removeItem(SESSION_KEY);
         elements.demoCodeButton.hidden = true;
       } else {
         const savedDemoCode = sessionStorage.getItem(SESSION_KEY);
